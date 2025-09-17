@@ -55,33 +55,8 @@ export default function Marketplace() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-          <TabsTrigger value="register">Enregistrer un item</TabsTrigger>
-          <TabsTrigger value="my-items">Mes items</TabsTrigger>
-          <TabsTrigger value="verify">Vérifier un item</TabsTrigger>
-          <TabsTrigger value="certify">Certifier un item</TabsTrigger>
-        </TabsList>
-
         <TabsContent value="marketplace">
           <ItemsList />
-        </TabsContent>
-
-        <TabsContent value="register">
-          <RegisterUser />
-          <RegisterItem />
-        </TabsContent>
-
-        <TabsContent value="my-items">
-          <ItemsList showOnlyUserItems={true} />
-        </TabsContent>
-
-        <TabsContent value="verify">
-          <VerifyItem />
-        </TabsContent>
-
-        <TabsContent value="certify">
-          <CertifyItem />
         </TabsContent>
       </Tabs>
     </div>
