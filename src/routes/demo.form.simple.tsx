@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 
 import { useAppForm } from '../hooks/demo.form'
+import Marketplace from '@/components/Marketplace'
 
 export const Route = createFileRoute('/demo/form/simple')({
   component: SimpleForm,
@@ -36,29 +37,9 @@ function SimpleForm() {
           'radial-gradient(50% 50% at 5% 40%, #add8e6 0%, #0000ff 70%, #00008b 100%)',
       }}
     >
-      <div className="w-full max-w-2xl p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            form.handleSubmit()
-          }}
-          className="space-y-6"
-        >
-          <form.AppField name="title">
-            {(field) => <field.TextField label="Title" />}
-          </form.AppField>
-
-          <form.AppField name="description">
-            {(field) => <field.TextArea label="Description" />}
-          </form.AppField>
-
-          <div className="flex justify-end">
-            <form.AppForm>
-              <form.SubscribeButton label="Submit" />
-            </form.AppForm>
-          </div>
-        </form>
+      <div className="w-full p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
+                  <Marketplace></Marketplace>
+          
       </div>
     </div>
   )

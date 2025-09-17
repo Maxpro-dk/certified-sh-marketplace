@@ -2,12 +2,9 @@ import { useState } from 'react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import RegisterUser from '@/components/RegisterUser'
-import RegisterItem from '@/components/RegisterItem'
+import { Tabs, TabsContent } from './ui/tabs'
 import ItemsList from '@/components/ItemsList'
-import VerifyItem from '@/components/VerifyItem'
-import CertifyItem from '@/components/CertifyItem'
+
 
 export default function Marketplace() {
   const { address, isConnected } = useAccount()
@@ -48,7 +45,7 @@ export default function Marketplace() {
           <span className="text-sm text-muted-foreground">
             Connecté: {address?.slice(0, 6)}...{address?.slice(-4)}
           </span>
-          <Button variant="outline" onClick={() => disconnect()}>
+          <Button className='text-black' variant="outline" onClick={() => disconnect()}>
             Déconnexion
           </Button>
         </div>

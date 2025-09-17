@@ -13,11 +13,13 @@ import { Badge } from './ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Textarea } from './ui/textarea'
 import { Label } from './ui/label'
-import { Loader2, Plus, Filter, ShoppingCart, ArrowRightLeft, Award, Eye, Gavel } from 'lucide-react'
+import { Loader2, Plus, Filter, ShoppingCart, ArrowRightLeft, Award, Eye, Gavel, CircleOff } from 'lucide-react'
 import { toast } from 'sonner'
-import { contractAddress } from '../lib/wagmi'
+import { contractAddress, config } from '../lib/wagmi'
 import ABI from '@/lib/contract_abi'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import {  Dialog }  from './ui/dialog'
+import { readContract } from '@wagmi/core' 
+import {  DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
 
 interface Item {
   id: number
@@ -57,6 +59,7 @@ export default function MarketplaceInterface() {
   // Modal states
   const [isAddItemOpen, setIsAddItemOpen] = useState(false)
   const [isAddCertifierOpen, setIsAddCertifierOpen] = useState(false)
+  const [isVerifyCertificationOpen, setIsVerifyCertificationOpen] = useState(false)
   const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [selectedItemForTransfer, setSelectedItemForTransfer] = useState<number | null>(null)
   
@@ -65,6 +68,13 @@ export default function MarketplaceInterface() {
     name: '', numSerie: '', description: '', image: ''
   })
   const [newCertifierAddress, setNewCertifierAddress] = useState('')
+  const [checkItem, setCheckItem] = useState<{
+    uid: number,
+    certified:'pending'|'certified'|'uncertified'
+  }>({
+    uid: 0,
+    certified: "pending"
+  })
   const [transferData, setTransferData] = useState<TransferData>({
     itemId: 0, toAddress: ''
   })
@@ -200,13 +210,13 @@ export default function MarketplaceInterface() {
   }
 
   // Handle adding certifier
-  const handleAddCertifier = () => {
+  const handleAddCertifier = async () => {
     if (!newCertifierAddress || !/^0x[a-fA-F0-9]{40}$/.test(newCertifierAddress)) {
       toast.error('Veuillez entrer une adresse Ethereum valide')
       return
     }
 
-    writeContract({
+    let isCertified = await  writeContract({
       address: contractAddress,
       abi: ABI,
       functionName: 'addCertifier',
@@ -216,6 +226,40 @@ export default function MarketplaceInterface() {
     setNewCertifierAddress('')
     setIsAddCertifierOpen(false)
   }
+
+
+  // Handle adding certifier
+  const handleCheckCertification = async () => {
+    if (!checkItem.uid || !/^[0-9]{1,30}$/.test(`${checkItem.uid}`)) {
+      toast.error('Veuillez entrer un identifiant IUD valide')
+      return
+    }
+
+      try {
+          let  isCertifiedItem =  await readContract(config,{
+            address: contractAddress,
+            abi: ABI,
+            functionName: 'isItemCertified',
+            args: [checkItem.uid]
+          });
+    
+          setCheckItem({...checkItem, certified: isCertifiedItem ? 'certified' : 'uncertified'});
+      } catch (error) {
+        setCheckItem({...checkItem, certified:  'pending' });
+        toast.error("Aucun  bien ne  porte  ce  numero!  Veuillez  réessayer")
+      }
+  }
+
+  const handleCheckCertificationToggle = (value:boolean)=>{
+    if(value){
+      setCheckItem({uid:0, certified: 'pending'})
+    }
+
+    setIsVerifyCertificationOpen(value)
+
+    
+  }
+
 
   // Handle item certification
   const handleCertifyItem = (itemId: number) => {
@@ -287,7 +331,7 @@ export default function MarketplaceInterface() {
   }, [isConfirmed, refetchItems])
 
   const isOwner = contractOwner && address && 
-    contractOwner.toLowerCase() === address.toLowerCase()
+   ( contractOwner as string).toLowerCase() === address.toLowerCase()
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -297,7 +341,7 @@ export default function MarketplaceInterface() {
         
         <div className="flex flex-wrap gap-2">
           {/* Add Item Modal */}
-          <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
+         { <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -358,13 +402,68 @@ export default function MarketplaceInterface() {
                 </Button>
               </div>
             </DialogContent>
-          </Dialog>
+          </Dialog> as any }
+
+            {/* verify goods Modal - Only for owner */}
+            <Dialog open={isVerifyCertificationOpen}  onOpenChange={handleCheckCertificationToggle}>
+              <DialogTrigger asChild>
+                <Button className='text-blue-900' variant="outline">
+                  <Award className="h-4 w-4 mr-2" />
+                  Vérifier un  bien
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Vérifier un  bien</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className='mb-4' htmlFor="certifierAddress">UID du bien d'ocassion</Label>
+                    <Input
+                      id="certifierAddress"
+                      value={checkItem.uid}
+                      onChange={(e) => setCheckItem({certified: 'pending', uid: parseInt(e.target.value||'0')})}
+                      placeholder="ex: 12"
+                    />
+                  </div>
+                  { checkItem.uid && checkItem.certified =="certified" ?
+                        <Badge variant="secondary" className="w-full flex flex-col justify-center align-center  p-8 bg-green-100 text-green-800">
+                          <Award className="h-8 w-8 mr-2" />
+                           <span >
+                             Bien  Certifié
+                           </span>
+                        </Badge> :""
+                  }
+
+                  { checkItem.uid &&  checkItem.certified == "uncertified" ?
+                        <Badge variant="destructive" className="w-full flex flex-col justify-center align-center  p-8 bg-red-100 text-red-800">
+                          <CircleOff  className="h-8 w-8 mr-2" />
+                           <span >
+                             Bien Non Certifié
+                           </span>
+                        </Badge> : ""
+                  }
+
+                  <Button 
+                    onClick={handleCheckCertification}
+                    disabled={isPending || isConfirming}
+                    className="w-full"
+                  >
+                    {isPending || isConfirming ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : null}
+                    Vérifier
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          
 
           {/* Add Certifier Modal - Only for owner */}
           {isOwner && (
             <Dialog open={isAddCertifierOpen} onOpenChange={setIsAddCertifierOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button className='text-green-900' variant="outline">
                   <Award className="h-4 w-4 mr-2" />
                   Ajouter certificateur
                 </Button>
@@ -397,6 +496,7 @@ export default function MarketplaceInterface() {
               </DialogContent>
             </Dialog>
           )}
+
 
           {/* Transfer Modal */}
           <Dialog open={isTransferOpen} onOpenChange={setIsTransferOpen}>
@@ -477,7 +577,8 @@ export default function MarketplaceInterface() {
             return (
               <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                  {item.image && item.image !== 'ipfs://' ? (
+                 { item.image }
+                  {item.image ? (
                     <img
                       src={item.image}
                       alt={item.name}
@@ -505,10 +606,16 @@ export default function MarketplaceInterface() {
                           En vente
                         </Badge>
                       )}
+
                     </div>
                   </div>
-                  <CardDescription className="text-xs">
-                    Série: {item.numSerie}
+                  <CardDescription className="flex justify-between">
+                      <span>
+                          Série: {item.numSerie} 
+                      </span>
+                      <span>
+                          UID: {item.id} 
+                      </span>
                   </CardDescription>
                 </CardHeader>
                 
@@ -525,6 +632,7 @@ export default function MarketplaceInterface() {
 
                   {/* Action buttons */}
                   <div className="space-y-2">
+                    
                     {/* Certify button - for certifiers only */}
                     {canCertify && (
                       <Button 
@@ -605,6 +713,7 @@ export default function MarketplaceInterface() {
                         Non disponible à la vente
                       </p>
                     )}
+
                   </div>
                 </CardContent>
               </Card>
