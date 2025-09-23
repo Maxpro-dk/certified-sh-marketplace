@@ -20,6 +20,7 @@ import ABI from '@/lib/contract_abi'
 import {  Dialog }  from './ui/dialog'
 import { readContract } from '@wagmi/core' 
 import {  DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import AddItemInterface from './AddItem'
 
 interface Item {
   id: number
@@ -341,6 +342,7 @@ export default function MarketplaceInterface() {
         
         <div className="flex flex-wrap gap-2">
           {/* Add Item Modal */}
+          <AddItemInterface/>
          { <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
             <DialogTrigger asChild>
               <Button>
