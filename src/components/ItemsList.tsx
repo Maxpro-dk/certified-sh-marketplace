@@ -56,6 +56,7 @@ export default function MarketplaceInterface() {
   const [filteredItems, setFilteredItems] = useState<Item[]>([])
   const [filter, setFilter] = useState<FilterType>('all')
   const [salePrices, setSalePrices] = useState<{[key: number]: string}>({})
+  const [isNewItem, setIsNewItem] = useState(false)
   
   // Modal states
   const [isAddItemOpen, setIsAddItemOpen] = useState(false)
@@ -109,7 +110,7 @@ export default function MarketplaceInterface() {
   // Convert contract data to Item objects
   useEffect(() => {
     if (allItemsData && Array.isArray(allItemsData) && allItemsData.length >= 8) {
-      const [ids, names, numSeries, owners, isCertifieds, forSales, prices, transactionCounts] = allItemsData
+      const [ids, names, numSeries, images, descriptions, owners, isCertifieds, forSales, prices, transactionCounts] = allItemsData
       
       const itemsData: Item[] = []
       for (let i = 0; i < ids.length; i++) {
@@ -118,8 +119,8 @@ export default function MarketplaceInterface() {
             id: Number(ids[i]),
             name: names[i],
             numSerie: numSeries[i],
-            description: '', // We'll need to fetch individual items for full details
-            image: '', // We'll need to fetch individual items for full details
+            description: descriptions[i], // We'll need to fetch individual items for full details
+            image: images[i], // We'll need to fetch individual items for full details
             owner: owners[i],
             isCertified: isCertifieds[i],
             certifiedBy: '0x0000000000000000000000000000000000000000',
@@ -133,38 +134,6 @@ export default function MarketplaceInterface() {
     }
   }, [allItemsData])
 
-  // Fetch detailed item information
-  useEffect(() => {
-    const fetchItemDetails = async () => {
-      if (items.length > 0 && publicClient) {
-        const updatedItems = await Promise.all(
-          items.map(async (item) => {
-            try {
-              const itemDetails = await publicClient.readContract({
-                address: contractAddress,
-                abi: ABI,
-                functionName: 'getItem',
-                args: [item.id],
-              }) as any[]
-              
-              return {
-                ...item,
-                description: itemDetails[3] || '',
-                image: itemDetails[4] || '',
-                certifiedBy: itemDetails[7] || '0x0000000000000000000000000000000000000000'
-              }
-            } catch (error) {
-              console.error(`Error fetching details for item ${item.id}:`, error)
-              return item
-            }
-          })
-        )
-        setItems(updatedItems)
-      }
-    }
-
-    fetchItemDetails()
-  }, [allItemsData, publicClient])
 
   // Apply filters
   useEffect(() => {
@@ -329,7 +298,7 @@ export default function MarketplaceInterface() {
       refetchItems()
       toast.success('Transaction confirmée avec succès!')
     }
-  }, [isConfirmed, refetchItems])
+  }, [isConfirmed, refetchItems, isNewItem])
 
   const isOwner = contractOwner && address && 
    ( contractOwner as string).toLowerCase() === address.toLowerCase()
@@ -342,7 +311,7 @@ export default function MarketplaceInterface() {
         
         <div className="flex flex-wrap gap-2">
           {/* Add Item Modal */}
-          <AddItemInterface/>
+          <AddItemInterface onItemAdded={()=> setIsNewItem(!isNewItem)}/>
          { <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -579,7 +548,6 @@ export default function MarketplaceInterface() {
             return (
               <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                 { item.image }
                   {item.image ? (
                     <img
                       src={item.image}

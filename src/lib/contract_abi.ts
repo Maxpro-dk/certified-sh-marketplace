@@ -170,6 +170,16 @@ const  ABI = [
           "type": "string[]"
         },
         {
+          "internalType": "string[]",
+          "name": "images",
+          "type": "string[]"
+        },
+        {
+          "internalType": "string[]",
+          "name": "descriptions",
+          "type": "string[]"
+        },
+        {
           "internalType": "address[]",
           "name": "owners",
           "type": "address[]"
@@ -488,6 +498,6 @@ const  ABI = [
       "stateMutability": "view",
       "type": "function"
     }
-  ]
+]
 
 export default ABI

@@ -22,7 +22,7 @@ const validateForm = (item: NewItem): string | null => {
   return null;
 };
 
-export default function AddItemInterface() {
+export default function AddItemInterface({onItemAdded}: {onItemAdded?: () => void}) {
   const [isAddItemOpen, setIsAddItemOpen] = useState<boolean>(false);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   
@@ -96,13 +96,14 @@ export default function AddItemInterface() {
       }
 
       // Register item on blockchain
-      writeContract({
+       writeContract({
         address: contractAddress as `0x${string}`,
         abi: ABI,
         functionName: 'registerItem',
         args: [newItem.name, newItem.numSerie, newItem.description, imageIpfsUrl],
       });
 
+       onItemAdded?.();
     } catch (error) {
       console.error('Error during registration:', error);
       toast.error(error instanceof Error ? error.message : 'Erreur lors du téléversement');
