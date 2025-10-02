@@ -103,7 +103,7 @@ export default function AddItemInterface({onItemAdded}: {onItemAdded?: () => voi
         args: [newItem.name, newItem.numSerie, newItem.description, imageIpfsUrl],
       });
 
-       onItemAdded?.();
+     
     } catch (error) {
       console.error('Error during registration:', error);
       toast.error(error instanceof Error ? error.message : 'Erreur lors du téléversement');
@@ -134,6 +134,9 @@ export default function AddItemInterface({onItemAdded}: {onItemAdded?: () => voi
   useEffect(() => {
     if (isSuccess) {
       toast.success('Bien enregistré avec succès!');
+      if (typeof onItemAdded === 'function') {
+        onItemAdded();
+      }
       setIsAddItemOpen(false);
     }
     

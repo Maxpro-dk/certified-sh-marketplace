@@ -298,7 +298,15 @@ export default function MarketplaceInterface() {
       refetchItems()
       toast.success('Transaction confirmée avec succès!')
     }
-  }, [isConfirmed, refetchItems, isNewItem])
+  }, [isConfirmed, refetchItems, publicClient])
+
+useEffect(() => {
+    
+      refetchItems()
+      toast.success('Rechargement des biens!')
+      console.log("isNewItem", isNewItem)
+   
+ }, [ isNewItem])
 
   const isOwner = contractOwner && address && 
    ( contractOwner as string).toLowerCase() === address.toLowerCase()
@@ -312,69 +320,6 @@ export default function MarketplaceInterface() {
         <div className="flex flex-wrap gap-2">
           {/* Add Item Modal */}
           <AddItemInterface onItemAdded={()=> setIsNewItem(!isNewItem)}/>
-         { <Dialog open={isAddItemOpen} onOpenChange={setIsAddItemOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter un bien
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Enregistrer un nouveau bien</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">Nom du bien *</Label>
-                  <Input
-                    id="name"
-                    value={newItem.name}
-                    onChange={(e) => setNewItem({...newItem, name: e.target.value})}
-                    placeholder="Ex: iPhone 14 Pro"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="numSerie">Numéro de série *</Label>
-                  <Input
-                    id="numSerie"
-                    value={newItem.numSerie}
-                    onChange={(e) => setNewItem({...newItem, numSerie: e.target.value})}
-                    placeholder="Ex: SN123456789"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    value={newItem.description}
-                    onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                    placeholder="Description détaillée du bien"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="image">Image (URL IPFS)</Label>
-                  <Input
-                    id="image"
-                    value={newItem.image}
-                    onChange={(e) => setNewItem({...newItem, image: e.target.value})}
-                    placeholder="ipfs://..."
-                  />
-                </div>
-                <Button 
-                  onClick={handleRegisterItem}
-                  disabled={isPending || isConfirming}
-                  className="w-full"
-                >
-                  {isPending || isConfirming ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : null}
-                  Enregistrer le bien
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog> as any }
-
             {/* verify goods Modal - Only for owner */}
             <Dialog open={isVerifyCertificationOpen}  onOpenChange={handleCheckCertificationToggle}>
               <DialogTrigger asChild>
