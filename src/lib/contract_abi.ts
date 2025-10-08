@@ -93,6 +93,37 @@ const  ABI = [
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "userAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "location",
+          "type": "string"
+        }
+      ],
+      "name": "userRegistered",
+      "type": "event"
+    },
+    {
       "inputs": [
         {
           "internalType": "address",
@@ -203,6 +234,16 @@ const  ABI = [
           "internalType": "uint256[]",
           "name": "transactionCounts",
           "type": "uint256[]"
+        },
+        {
+          "internalType": "string[]",
+          "name": "proofImages",
+          "type": "string[]"
+        },
+        {
+          "internalType": "string[]",
+          "name": "ownerNames",
+          "type": "string[]"
         }
       ],
       "stateMutability": "view",
@@ -267,6 +308,11 @@ const  ABI = [
           "internalType": "uint256",
           "name": "transactionCount",
           "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "proofImage",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -296,6 +342,40 @@ const  ABI = [
           "internalType": "uint256[]",
           "name": "salePrices",
           "type": "uint256[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_userAddress",
+          "type": "address"
+        }
+      ],
+      "name": "getUser",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "internalType": "bool",
+          "name": "status",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -392,6 +472,11 @@ const  ABI = [
           "internalType": "uint256",
           "name": "price",
           "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "proofImage",
+          "type": "string"
         }
       ],
       "stateMutability": "view",
@@ -449,9 +534,37 @@ const  ABI = [
           "internalType": "string",
           "name": "_image",
           "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_proofImage",
+          "type": "string"
         }
       ],
       "name": "registerItem",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_email",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_location",
+          "type": "string"
+        }
+      ],
+      "name": "registerUser",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -497,7 +610,41 @@ const  ABI = [
       ],
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "users",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "location",
+          "type": "string"
+        },
+        {
+          "internalType": "bool",
+          "name": "status",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
     }
-]
+  ]
 
 export default ABI

@@ -1,29 +1,32 @@
-// types/item.ts
+export interface Item {
+  id: number
+  name: string
+  numSerie: string
+  description: string
+  image: string
+  owner: string
+  ownerName: string
+  isCertified: boolean
+  certifiedBy: string
+  forSale: boolean
+  price: bigint
+  transactionCount: number
+  proofImage: string
+}
+
 export interface NewItem {
-  name: string;
-  numSerie: string;
-  description: string;
-  image: File | null;
-  imageUrl: string;
+  name: string
+  numSerie: string
+  description: string
+  image: File | null
+  proofImage: File | null
+  imageUrl: string
+  proofImageUrl: string
 }
 
-export interface Item extends Omit<NewItem, 'image'> {
-  id: string;
-  tokenId?: bigint;
-  owner: string;
-  registrationDate: Date;
-  imageIpfsUrl: string;
-}
-
-export interface ContractABI {
-  // Define your contract ABI types here based on your actual ABI
-  registerItem: {
-    name: string;
-    type: 'function';
-    inputs: Array<{
-      name: string;
-      type: string;
-      internalType: string;
-    }>;
-  };
+export interface UserData {
+  name: string
+  email: string
+  location: string
+  status: boolean
 }

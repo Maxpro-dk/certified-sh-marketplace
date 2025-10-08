@@ -1,15 +1,45 @@
 import { useState } from 'react'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { useAccount, useConnect, useDisconnect ,   useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  usePublicClient} from 'wagmi'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import ItemsList from '@/components/ItemsList'
+import UserProfile from '@/components/UserProfile'
+import ActionBar from './ActionBar'
+import { Badge } from './ui/badge'
+import { Award } from 'lucide-react'
+import { contractAddress } from '@/lib/wagmi'
+import ABI from '@/lib/contract_abi'
+
 
 export default function Marketplace() {
   const { address, isConnected } = useAccount()
   const { connect, connectors, isPending } = useConnect()
   const { disconnect } = useDisconnect()
   const [activeTab, setActiveTab] = useState('marketplace')
+  const [showUserProfile, setShowUserProfile] = useState(false)
+
+
+  const { data: isCertifier } = useReadContract({
+      address: contractAddress,
+      abi: ABI,
+      functionName: 'certifiers',
+      args: [address],
+    })
+
+  
+    // Check if user is owner/certifier
+    const { data: contractOwner } = useReadContract({
+      address: contractAddress,
+      abi: ABI,
+      functionName: 'owner',
+    })
+
+    const isOwner = contractOwner && address &&
+    (contractOwner as string).toLowerCase() === address.toLowerCase()
 
   if (!isConnected) {
     return (
@@ -150,6 +180,33 @@ export default function Marketplace() {
                   </span>
                 </div>
               </div>
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                          {isCertifier && (
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                              <Award className="h-3 w-3 mr-1" />
+                              Certificateur
+                              </Badge>
+                          )}
+                          {isOwner && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700">
+                              Propriétaire du contrat
+                              </Badge>
+                          )}
+                          </div>
+                      </div>
+
+              {/* Bouton Profil */}
+              <Button 
+                onClick={() => setShowUserProfile(true)}
+                className="group relative flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 shadow-sm hover:shadow-md"
+                variant="outline"
+              >
+                <svg className="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700">Profil</span>
+              </Button>
 
               {/* Bouton Déconnexion */}
               <Button 
@@ -171,8 +228,8 @@ export default function Marketplace() {
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <div className="flex items-center justify-between mb-4">
             <TabsList className="bg-white/80 backdrop-blur-sm border border-gray-200/60 p-1 rounded-2xl shadow-sm">
-              {/* Marketplace - Icône de recherche/marché */}
               <TabsTrigger 
                 value="marketplace" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl px-6 py-3 transition-all duration-200"
@@ -183,7 +240,6 @@ export default function Marketplace() {
                 Marketplace
               </TabsTrigger>
 
-              {/* Mes Achats - Icône de panier/shopping */}
               <TabsTrigger 
                 value="mes-achats" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl px-6 py-3 transition-all duration-200"
@@ -194,7 +250,6 @@ export default function Marketplace() {
                 Mes Achats
               </TabsTrigger>
 
-              {/* En vente - Icône de tag/prix */}
               <TabsTrigger 
                 value="for-sale" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl px-6 py-3 transition-all duration-200"
@@ -205,7 +260,6 @@ export default function Marketplace() {
                 En vente
               </TabsTrigger>
 
-              {/* Certifiés - Icône de badge/certificat */}
               <TabsTrigger 
                 value="certified" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl px-6 py-3 transition-all duration-200"
@@ -216,7 +270,6 @@ export default function Marketplace() {
                 Certifiés
               </TabsTrigger>
 
-              {/* Non Certifiés - Icône de badge barré */}
               <TabsTrigger 
                 value="uncertified" 
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-purple-600 data-[state=active]:text-white rounded-xl px-6 py-3 transition-all duration-200"
@@ -227,6 +280,10 @@ export default function Marketplace() {
                 Non Certifiés
               </TabsTrigger>
             </TabsList>
+            <ActionBar  />
+            </div>
+          
+        
 
             <TabsContent value="marketplace" className="space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 p-6 shadow-sm">
@@ -258,6 +315,12 @@ export default function Marketplace() {
           </Tabs>
         </div>
       </main>
+
+      {/* Modal Profil Utilisateur */}
+      <UserProfile 
+        isOpen={showUserProfile} 
+        onClose={() => setShowUserProfile(false)} 
+      />
     </div>
   )
 }
