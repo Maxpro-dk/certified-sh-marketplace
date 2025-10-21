@@ -179,7 +179,7 @@ export default function AddItemInterface({ onItemAdded }: { onItemAdded?: () => 
       console.error('Contract error:', error);
       toast.error('Erreur lors de l\'enregistrement sur la blockchain');
     }
-  }, [isSuccess, isError, error, onItemAdded]);
+  }, [isSuccess, isError]);
 
   const removeImage = (field: 'image' | 'proofImage'): void => {
     const urlField = `${field}Url` as 'imageUrl' | 'proofImageUrl';

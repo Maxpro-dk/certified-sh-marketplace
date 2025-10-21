@@ -31,6 +31,7 @@ interface ItemDetails {
   owners: string[]
   datetimes: number[]
   salePrices: bigint[]
+  proofImage?: string
 }
 
 interface ItemDetailsProps {
@@ -84,8 +85,11 @@ export default function ItemDetails({ itemId, isOpen, onClose, onUpdate }: ItemD
         transactionCount: Number(itemData[10]),
         owners,
         datetimes,
-        salePrices
+        salePrices,
+        proofImage: itemData[10] || null
       }
+
+      console.log('Détails de l\'item:', itemData, details)
 
       setItemDetails(details)
     } catch (error) {
@@ -107,27 +111,7 @@ export default function ItemDetails({ itemId, isOpen, onClose, onUpdate }: ItemD
     })
   }
 
-  // Fonction pour acheter l'item
-  const handlePurchase = (itemId: number, price: bigint) => {
-    writeContract({
-      address: contractAddress,
-      abi: ABI,
-      functionName: 'buyItem',
-      args: [itemId],
-      value: price,
-    })
-  }
-
-  // Fonction pour certifier l'item
-  const handleCertifyItem = (itemId: number) => {
-    writeContract({
-      address: contractAddress,
-      abi: ABI,
-      functionName: 'certifyItem',
-      args: [itemId],
-    })
-  }
-
+ 
   // Recharger les données quand l'item change
   useEffect(() => {
     if (itemId && isOpen) {
@@ -148,7 +132,7 @@ export default function ItemDetails({ itemId, isOpen, onClose, onUpdate }: ItemD
 
   
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog    open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Détails du bien #{itemDetails?.id}</DialogTitle>
@@ -159,103 +143,129 @@ export default function ItemDetails({ itemId, isOpen, onClose, onUpdate }: ItemD
             <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : itemDetails ? (
-          <div className="space-y-6">
-            {/* Informations principales */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Image */}
-              <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                {itemDetails.image ? (
-                  <img
-                    src={itemDetails.image}
-                    alt={itemDetails.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    <Eye className="h-16 w-16" />
-                  </div>
-                )}
-              </div>
+          
 
-              {/* Informations */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-semibold">{itemDetails.name}</h3>
-                  <p className="text-muted-foreground">Série: {itemDetails.numSerie}</p>
+            <div className="space-y-6">
+
+              <div className="flex flex-col justify-between gap-4 ">
+
+              {/* Informations principales */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Image */}
+                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                  {itemDetails.image ? (
+                    <img
+                      src={itemDetails.image}
+                      alt={itemDetails.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <Eye className="h-16 w-16" />
+                    </div>
+                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <p><strong>Description:</strong> {itemDetails.description}</p>
-                  <p>
-                    <strong>Propriétaire actuel:</strong> 
-                    <span className={`${isOwner ? 'text-green-600 font-medium' : ''}`}>
-                      {itemDetails.owner.slice(0, 8)}...{itemDetails.owner.slice(-6)}
-                      {isOwner && ' (Vous)'}
-                    </span>
-                  </p>
-                  <div className="flex gap-2">
-                    <Badge variant={itemDetails.isCertified ? "secondary" : "outline"} 
-                          className={itemDetails.isCertified ? "bg-green-100 text-green-800" : ""}>
-                      {itemDetails.isCertified ? "Certifié" : "Non certifié"}
-                    </Badge>
-                    <Badge variant={itemDetails.forSale ? "secondary" : "outline"}
-                          className={itemDetails.forSale ? "bg-orange-100 text-orange-800" : ""}>
-                      {itemDetails.forSale ? "En vente" : "Non en vente"}
-                    </Badge>
+                {/* Informations */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-semibold">{itemDetails.name}</h3>
+                    <p className="text-muted-foreground">Série: {itemDetails.numSerie}</p>
                   </div>
-                  {itemDetails.forSale ? (
-                    <p className="text-lg font-bold text-primary">
-                      Prix: {(Number(itemDetails.price) / 1e18).toFixed(4)} ETH
+
+                  <div className="space-y-2">
+                    <p><strong>Description:</strong> {itemDetails.description}</p>
+                    <p>
+                      <strong>Propriétaire actuel:</strong> 
+                      <span className={`${isOwner ? 'text-green-600 font-medium' : ''}`}>
+                        {itemDetails.owner.slice(0, 8)}...{itemDetails.owner.slice(-6)}
+                        {isOwner && ' (Vous)'}
+                      </span>
                     </p>
-                  ): null}
+                    <div className="flex gap-2">
+                      <Badge variant={itemDetails.isCertified ? "secondary" : "outline"} 
+                            className={itemDetails.isCertified ? "bg-green-100 text-green-800" : ""}>
+                        {itemDetails.isCertified ? "Certifié" : "Non certifié"}
+                      </Badge>
+                      <Badge variant={itemDetails.forSale ? "secondary" : "outline"}
+                            className={itemDetails.forSale ? "bg-orange-100 text-orange-800" : ""}>
+                        {itemDetails.forSale ? "En vente" : "Non en vente"}
+                      </Badge>
+                    </div>
+                    {itemDetails.forSale ? (
+                      <p className="text-lg font-bold text-primary">
+                        Prix: {(Number(itemDetails.price) / 1e18).toFixed(4)} ETH
+                      </p>
+                    ): null}
+                  </div>
+
+              
                 </div>
-
-             
               </div>
-            </div>
 
-            {/* Historique des transactions */}
-            <div className="border-t pt-4">
-              <h4 className="text-lg font-semibold mb-4">Historique des transactions</h4>
-              {itemDetails.owners.length > 0 ? (
-                <div className="space-y-3">
-                  {itemDetails.owners.map((owner, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
-                          {index + 1}
+
+              {/* afficher la preuve */}
+                 <div className="flex flex-col">
+                <h5>Preuve de  propriété</h5>
+                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
+                      {itemDetails.proofImage ? (
+                        <img
+                          src={itemDetails.proofImage}
+                          alt={itemDetails.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <Eye className="h-16 w-16" />
                         </div>
-                        <div>
-                          <p className="font-medium">
-                            {owner.slice(0, 8)}...{owner.slice(-6)}
-                            {owner.toLowerCase() === address?.toLowerCase() && ' (Vous)'}
+                      )}
+                </div>
+              </div>
+              </div>
+           
+
+              {/* Historique des transactions */}
+              <div className="border-t pt-4">
+                <h4 className="text-lg font-semibold mb-4">Historique des transactions</h4>
+                {itemDetails.owners.length > 0 ? (
+                  <div className="space-y-3">
+                    {itemDetails.owners.map((owner, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              {owner.slice(0, 8)}...{owner.slice(-6)}
+                              {owner.toLowerCase() === address?.toLowerCase() && ' (Vous)'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatDate(itemDetails.datetimes[index])}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">
+                            {Number(itemDetails.salePrices[index]) > 0 
+                              ? `${(Number(itemDetails.salePrices[index]) / 1e18).toFixed(4)} ETH`
+                              : 'Transfert'
+                            }
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {formatDate(itemDetails.datetimes[index])}
+                            {index === itemDetails.owners.length - 1 ? 'Propriétaire actuel' : 'Ancien propriétaire'}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold">
-                          {Number(itemDetails.salePrices[index]) > 0 
-                            ? `${(Number(itemDetails.salePrices[index]) / 1e18).toFixed(4)} ETH`
-                            : 'Transfert'
-                          }
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {index === itemDetails.owners.length - 1 ? 'Propriétaire actuel' : 'Ancien propriétaire'}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  Aucune transaction enregistrée pour ce bien.
-                </p>
-              )}
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-4">
+                    Aucune transaction enregistrée pour ce bien.
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
             Impossible de charger les détails du bien.

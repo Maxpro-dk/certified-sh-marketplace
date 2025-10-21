@@ -1,8 +1,5 @@
 import { useState } from 'react'
-import { useAccount, useConnect, useDisconnect ,   useReadContract,
-  useWriteContract,
-  useWaitForTransactionReceipt,
-  usePublicClient} from 'wagmi'
+import { useAccount, useConnect, useDisconnect ,   useReadContract} from 'wagmi'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
@@ -21,6 +18,9 @@ export default function Marketplace() {
   const { disconnect } = useDisconnect()
   const [activeTab, setActiveTab] = useState('marketplace')
   const [showUserProfile, setShowUserProfile] = useState(false)
+
+  // check  change of property to re-render the list of items
+  const [itemChanged, setItemChanged] = useState(false);
 
 
   const { data: isCertifier } = useReadContract({
@@ -280,36 +280,39 @@ export default function Marketplace() {
                 Non Certifiés
               </TabsTrigger>
             </TabsList>
-            <ActionBar  />
+            <ActionBar onChange={()=> {
+              console.log("Item changed, notify parent in Marketplace");
+              setItemChanged(!itemChanged);
+            }}  />
             </div>
           
         
 
             <TabsContent value="marketplace" className="space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 p-6 shadow-sm">
-                <ItemsList />
+                <ItemsList  itemChanged={itemChanged} />
               </div>
             </TabsContent>
 
             <TabsContent value="mes-achats" className="space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 p-6 shadow-sm text-center">
-                 <ItemsList typeItem='my-items' />
+                 <ItemsList itemChanged={itemChanged} typeItem='my-items' />
               </div>
             </TabsContent>
 
             <TabsContent value="for-sale" className="space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 p-6 shadow-sm text-center">
-                  <ItemsList typeItem='for-sale' />
+                  <ItemsList itemChanged={itemChanged} typeItem='for-sale' />
               </div>
             </TabsContent>
             <TabsContent value="certified" className="space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 p-6 shadow-sm text-center">
-                  <ItemsList typeItem='certified' />
+                  <ItemsList itemChanged={itemChanged} typeItem='certified' />
               </div>
             </TabsContent>
              <TabsContent value="uncertified" className="space-y-6">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/60 p-6 shadow-sm text-center">
-                  <ItemsList typeItem='uncertified' />
+                  <ItemsList itemChanged={itemChanged} typeItem='uncertified' />
               </div>
             </TabsContent>
           </Tabs>

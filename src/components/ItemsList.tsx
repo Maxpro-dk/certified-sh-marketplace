@@ -54,13 +54,12 @@ interface TransferData {
 
 type FilterType = 'all' | 'my-items' | 'certified' | 'uncertified' | 'for-sale'
 
-export default function MarketplaceInterface({typeItem}: {typeItem?: FilterType}) {
+export default function MarketplaceInterface({typeItem, itemChanged}: {typeItem?: FilterType,  itemChanged?: boolean}) {
   const { address } = useAccount()
   const [items, setItems] = useState<Item[]>([])
   const [filteredItems, setFilteredItems] = useState<Item[]>([])
   const [filter, setFilter] = useState<FilterType>(typeItem ?? 'all')
   const [salePrices, setSalePrices] = useState<{ [key: number]: string }>({})
-  const [isNewItem, setIsNewItem] = useState(false)
   const [showUserProfile, setShowUserProfile] = useState(false)
 
   
@@ -239,12 +238,15 @@ export default function MarketplaceInterface({typeItem}: {typeItem?: FilterType}
       refetchItems()
       toast.success('Transaction confirmée avec succès!')
     }
-  }, [isConfirmed, refetchItems, publicClient])
+  }, [isConfirmed, publicClient, address,])
 
+ // Handle transaction success
   useEffect(() => {
-    refetchItems()
-    toast.success('Rechargement des biens!')
-  }, [isNewItem])
+      console.log("Item changed, refetch items listed");
+      refetchItems()
+      toast.success('Rafraîchissement des biens effectué!');
+    
+  }, [itemChanged])
 
   return (
     <div className="container mx-auto p-6 space-y-6">

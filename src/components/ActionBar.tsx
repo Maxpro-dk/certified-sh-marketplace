@@ -27,10 +27,7 @@ interface NewItem {
   image: string
 }
 
-interface TransferData {
-  itemId: number
-  toAddress: string
-}
+
 
 
 export default function ActionBar({onChange}: {onChange?: Function}) {
@@ -39,20 +36,8 @@ export default function ActionBar({onChange}: {onChange?: Function}) {
   const [isAddCertifierOpen, setIsAddCertifierOpen] = useState(false)
   const [isVerifyCertificationOpen, setIsVerifyCertificationOpen] = useState(false)
 
-  // Vérifier le statut d'enregistrement de l'utilisateur
-  const { data: userStatus } = useReadContract({
-    address: contractAddress,
-    abi: ABI,
-    functionName: 'getUser',
-    args: [address],
-  })
 
 
-
-  // Form states
-  const [newItem, setNewItem] = useState<NewItem>({
-    name: '', numSerie: '', description: '', image: ''
-  })
   const [newCertifierAddress, setNewCertifierAddress] = useState('')
   const [checkItem, setCheckItem] = useState<{
     uid: number,
@@ -61,9 +46,7 @@ export default function ActionBar({onChange}: {onChange?: Function}) {
     uid: 0,
     certified: "pending"
   })
-  const [transferData, setTransferData] = useState<TransferData>({
-    itemId: 0, toAddress: ''
-  })
+
 
   const { writeContract, isPending, data: hash } = useWriteContract()
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
@@ -77,14 +60,7 @@ export default function ActionBar({onChange}: {onChange?: Function}) {
     functionName: 'owner',
   })
 
-  const { data: isCertifier } = useReadContract({
-    address: contractAddress,
-    abi: ABI,
-    functionName: 'certifiers',
-    args: [address],
-  })
-
-
+ 
   // Handle adding certifier
   const handleAddCertifier = async () => {
     if (!newCertifierAddress || !/^0x[a-fA-F0-9]{40}$/.test(newCertifierAddress)) {
@@ -139,15 +115,11 @@ export default function ActionBar({onChange}: {onChange?: Function}) {
     if (isConfirmed) {
        
       toast.success('Transaction confirmée avec succès!')
+    
     }
-  }, [isConfirmed,  publicClient])
+  }, [isConfirmed,  publicClient, isNewItem])
 
-  useEffect(() => {
-    if( typeof onChange === "function"){
-            onChange();
-        }
-    toast.success('Rechargement des biens!')
-  }, [isNewItem])
+
 
   const isOwner = contractOwner && address &&
     (contractOwner as string).toLowerCase() === address.toLowerCase()
@@ -164,7 +136,11 @@ export default function ActionBar({onChange}: {onChange?: Function}) {
          
 
           {/* Add Item Modal */}
-          <AddItemInterface onItemAdded={() => setIsNewItem(!isNewItem)} />
+          <AddItemInterface onItemAdded={() => {
+            console.log("Item added, notify parent");
+            setIsNewItem(!isNewItem);
+            onChange();
+          }} />
           
           {/* Verify goods Modal */}
           <Dialog open={isVerifyCertificationOpen} onOpenChange={handleCheckCertificationToggle}>
